@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, minimal-ui">
+    <title>Quick Math Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffebcd;
+            color: #333;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        #app {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px auto;
+            width: 90%;
+            max-width: 400px;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        h1, h2 {
+            margin: 0;
+            padding: 10px 0;
+            color: #333;
+        }
+        button {
+            padding: 15px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            width: 90%;
+        }
+        .pick-level-button {
+            color: red;
+            background-color: #4CAF50;
+        }
+        .how-to-play-button {
+            color: yellow;
+            background-color: #4CAF50;
+        }
+        .option {
+            margin: 10px auto;
+            width: 90%;
+            font-size: 18px;
+            transition: background-color 0.3s ease;
+        }
+        .option.correct {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .option.wrong {
+            background-color: #e74c3c;
+            color: white;
+        }
+        #feedback, #timer {
+            font-size: 18px;
+            color: #333;
+            font-weight: bold;
+        }
+        /* Custom colors for specified elements */
+        #levels-screen h2 {
+            color: purple;
+        }
+        #level-1-button {
+            background-color: #f5deb3; /* Cream color */
+        }
+        #level-2-button {
+            background-color: white;
+        }
+        #level-3-button {
+            background-color: red;
+            color: white;
+        }
+        .option:nth-child(2) {
+            background-color: skyblue;
+        }
+        .option:nth-child(3) {
+            background-color: darkblue;
+            color: white;
+        }
+        .option:nth-child(4) {
+            background-color: purple;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div id="home-screen" class="screen" style="display: block;">
+            <h1>Quick Math Game 🎉</h1>
+            <button class="pick-level-button" onclick="showScreen('levels-screen')">Pick a Level to Play</button>
+            <button class="how-to-play-button" onclick="showScreen('how-to-play-screen')">How to Play This Game</button>
+<img src="file://///wqeic/fsstudent/students/221532/level 3 extended diploma in IT/unit-7 mobile apps development/fun.jpg" width="100" height="104" alt=""/>
+        </div>
+        <div id="levels-screen" class="screen" style="display: none;">
+            <h2>Levels</h2>
+            <button id="level-1-button" onclick="startLevel(0)">Level 1</button>
+            <button id="level-2-button" onclick="startLevel(1)">Level 2</button>
+            <button id="level-3-button" onclick="startLevel(2)">Level 3</button>
+            <button onclick="showScreen('home-screen')">Return to Main Menu</button>
+        </div>
+        <div id="how-to-play-screen" class="screen" style="display: none;">
+            <h2>How to Play</h2>
+            <p>Answer questions within the time limit.<br>Earn points for correct answers!</p>
+            <button onclick="showScreen('home-screen')">Return to Main Menu</button>
+        </div>
+        <div id="game-screen" class="screen" style="display: none;">
+            <h2 id="level-title">Level</h2>
+            <p id="score-display">Score: 0</p>
+            <p id="question-display">Question</p>
+            <div id="options">
+                <button class="option" onclick="checkAnswer(0)">Option 1</button>
+                <button class="option" onclick="checkAnswer(1)">Option 2</button>
+                <button class="option" onclick="checkAnswer(2)">Option 3</button>
+                <button class="option" onclick="checkAnswer(3)">Option 4</button>
+            </div>
+            <p id="feedback"></p>
+            <p id="timer">Time: 0</p>
+            <button onclick="showScreen('levels-screen')">Return to Levels</button>
+        </div>
+        <div id="end-screen" class="screen" style="display: none;">
+            <h2>Quiz Completed!</h2>
+            <p id="final-score">Your final score: </p>
+            <button onclick="showScreen('home-screen')">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        let score = 0;
+        let currentLevel = 0;
+        let currentQuestionIndex = 0;
+        let timer;
+        let timeRemaining;
+
+        const questions = [
+            [
+                { question: "5 + 3", options: [8, 7, 9, 6], answer: 0 },
+                { question: "6 - 2", options: [4, 3, 5, 6], answer: 0 },
+                { question: "3 + 4", options: [7, 8, 6, 9], answer: 0 },
+                { question: "9 - 4", options: [5, 6, 4, 7], answer: 0 }
+            ],
+            [
+                { question: "10 + 5", options: [15, 13, 14, 16], answer: 0 },
+                { question: "12 - 4", options: [8, 7, 9, 6], answer: 0 },
+                { question: "7 + 8", options: [15, 16, 14, 13], answer: 0 },
+                { question: "14 - 7", options: [7, 6, 8, 9], answer: 0 }
+            ],
+            [
+                { question: "11 + 7", options: [18, 19, 17, 16], answer: 0 },
+                { question: "15 - 5", options: [10, 9, 8, 7], answer: 0 },
+                { question: "9 + 9", options: [18, 17, 16, 15], answer: 0 },
+                { question: "16 - 8", options: [8, 7, 9, 6], answer: 0 }
+            ]
+        ];
+
+        const timeLimits = [30, 20, 10];
+
+        function showScreen(screenId) {
+            clearInterval(timer);
+            document.querySelectorAll('.screen').forEach(screen => screen.style.display = 'none');
+            document.getElementById(screenId).style.display = 'block';
+        }
+
+        function startLevel(level) {
+            currentLevel = level;
+            score = 0;
+            currentQuestionIndex = 0;
+            timeRemaining = timeLimits[level];
+            showNextQuestion();
+            showScreen('game-screen');
+            startTimer();
+        }
+
+        function showNextQuestion() {
+            if (currentQuestionIndex < questions[currentLevel].length) {
+                const questionData = questions[currentLevel][currentQuestionIndex];
+                document.getElementById('question-display').innerText = questionData.question;
+                document.getElementById('level-title').innerText = `Level ${currentLevel + 1}`;
+                document.getElementById('score-display').innerText = `Score: ${score}`;
+                questionData.options.forEach((option, index) => {
+                    const optionButton = document.querySelectorAll('.option')[index];
+                    optionButton.innerText = option;
+                    optionButton.classList.remove('correct', 'wrong');
+                });
+                document.getElementById('feedback').innerText = '';
+                timeRemaining = timeLimits[currentLevel];
+            } else {
+                completeLevel();
+            }
+        }
+
+        function startTimer() {
+            clearInterval(timer);
+            timer = setInterval(() => {
+                document.getElementById('timer').innerText = `Time: ${timeRemaining}`;
+                if (timeRemaining > 0) {
+                    timeRemaining--;
+                } else {
+                    clearInterval(timer);
+                    document.getElementById('feedback').innerText = "Time's up!";
+                    setTimeout(() => {
+
+                        currentQuestionIndex++;
+                        showNextQuestion();
+                    }, 2000);
+                }
+            }, 1000);
+        }
+
+        function checkAnswer(selectedOption) {
+            const questionData = questions[currentLevel][currentQuestionIndex];
+            const correctAnswer = questionData.answer;
+            const optionButtons = document.querySelectorAll('.option');
+            if (selectedOption === correctAnswer) {
+                score++;
+                optionButtons[selectedOption].classList.add('correct');
+                document.getElementById('feedback').innerText = "Correct!";
+            } else {
+                optionButtons[selectedOption].classList.add('wrong');
+                document.getElementById('feedback').innerText = "Wrong! Try again.";
+            }
+            setTimeout(() => {
+                currentQuestionIndex++;
+                showNextQuestion();
+            }, 2000);
+        }
+
+        function completeLevel() {
+            if (currentLevel < questions.length - 1) {
+                currentLevel++;
+                startLevel(currentLevel);
+            } else {
+                document.getElementById('final-score').innerText = `Your final score: ${score}`;
+                showScreen('end-screen');
+            }
+        }
+    </script>
+</body>
+</html>
